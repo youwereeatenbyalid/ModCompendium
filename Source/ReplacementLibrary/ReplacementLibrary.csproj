@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Dependencies\Source\CriPakTools\CriPakTools\CriPakTools.csproj" />
+    <ProjectReference Include="..\..\Dependencies\Source\DiscUtils\Library\DiscUtils.Core\DiscUtils.Core.csproj" />
+    <ProjectReference Include="..\..\Dependencies\Source\DiscUtils\Library\DiscUtils.Iso9660\DiscUtils.Iso9660.csproj" />
+    <ProjectReference Include="..\..\Dependencies\Source\DiscUtils\Library\DiscUtils.Streams\DiscUtils.Streams.csproj" />
+  </ItemGroup>
+
+</Project>
