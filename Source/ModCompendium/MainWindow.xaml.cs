@@ -30,6 +30,7 @@ namespace ModCompendium
     /// </summary>
     public partial class MainWindow : Window
     {
+        //string array for the combo box
         private static readonly string[] sGameNames =
         {
             "Persona 3",
@@ -44,35 +45,38 @@ namespace ModCompendium
             "Persona Q2",
             "Catherine Full Body"
         };
-
+        //specifies the game being currently edited.
         public Game SelectedGame { get; private set; }
-
-        public List<ModViewModel> Mods { get; private set; }
-
+        //list of all active mods(?)
+        public List<ModViewModel> Mods { get; private set;}
+        //loads the GameConfig from the ModCompendiumLibrary
         public GameConfig GameConfig { get; private set; }
-
         public MainWindowConfig Config { get; private set; }
-
+        //retrieves the modviewmodel of the selected item in the datagrid?
         public ModViewModel SelectedModViewModel => ( ModViewModel ) ModGrid.SelectedItem;
-
+        //and then retrieves the mod from that view model?
         public Mod SelectedMod => ( Mod )SelectedModViewModel;
-
+        //Window startup
         public MainWindow()
         {
+            //starts the window I guess
             InitializeComponent();
             InitializeLog();
-
+            //gets the Assembly version
             var version = Assembly.GetExecutingAssembly().GetName().Version;
+            //appends it to mod compendium in the window title.
             Title = $"Mod Compendium {version.Major}.{version.Minor}.{version.Revision}";
+            //retrieves the the main window configuration through the dark arts.
             Config = ConfigStore.Get<MainWindowConfig>();
             InitializeGameComboBox();
         }
-
+        //starts the log (possibly the output log?)
         private void InitializeLog()
         {
-            Log.MessageBroadcasted += Log_MessageBroadcasted;
+           Log.MessageBroadcasted += Log_MessageBroadcasted;
         }
 
+        //initializes the combo box with the game list.
         private void InitializeGameComboBox()
         {
             GameComboBox.ItemsSource = sGameNames;
@@ -134,11 +138,12 @@ namespace ModCompendium
         }
 
         // Events
+        //InvokeonUIthread will not work, must find equivalent.
         private static void InvokeOnUIThread( Action action )
         {
             Application.Current.Dispatcher.BeginInvoke( action );
         }
-
+        //handles adding the log info to the logtextbox.
         private void Log_MessageBroadcasted( object sender, MessageBroadcastedEventArgs e )
         {
             if ( e.Severity == Severity.Trace )
@@ -149,7 +154,7 @@ namespace ModCompendium
             {
                 SolidColorBrush color;
                 string severityIndicator;
-
+                //color options need to be replaced
                 switch ( e.Severity )
                 {
                     case Severity.Trace:
@@ -174,7 +179,7 @@ namespace ModCompendium
                         severityIndicator = "I";
                         break;
                 }
-
+                //textrange doesn't exist, find an equivilent way to contain/display the new log info.
                 var textRange = new TextRange( LogTextBox.Document.ContentEnd, LogTextBox.Document.ContentEnd )
                 {
                     Text = $"[{e.Channel.Name}] {severityIndicator}: {e.Message}\n"
@@ -183,19 +188,19 @@ namespace ModCompendium
                 textRange.ApplyPropertyValue( TextElement.ForegroundProperty, color );
             } );
         }
-
+        //Saves the configs if you close the main window
         protected override void OnClosed( EventArgs e )
         {
             UpdateConfigChangesAndSave();
         }
-
+        //updates the game config and refreshes the modlist??
         private void GameComboBox_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             SelectedGame = ( Game )( GameComboBox.SelectedIndex + 1 );
             GameConfig = ConfigStore.Get( SelectedGame );
             RefreshMods();
         }
-
+        //opens the gameconfig window
         private void SettingsButton_Click( object sender, RoutedEventArgs e )
         {
             var settingsWindow = new GameConfigWindow( GameConfig ) { Owner = this };

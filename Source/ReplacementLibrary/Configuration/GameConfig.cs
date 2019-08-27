@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using ModCompendiumLibrary.ModSystem;
@@ -18,7 +19,7 @@ namespace ModCompendiumLibrary.Configuration
 
         protected GameConfig()
         {
-            OutputDirectoryPath = $"Output\\{Game}";
+            OutputDirectoryPath = Path.Combine("Output",$"{Game}");
 
             mModConfigs = new Dictionary<Guid, ModConfig>();
 

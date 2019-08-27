@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Persona5DancingConfig>
+  <OutputDirectoryPath>Output/Persona5Dancing</OutputDirectoryPath>
+  <ModConfigs />
+  <CpkRootOrPath></CpkRootOrPath>
+  <Compression>True</Compression>
+  <Extract>True</Extract>
+</Persona5DancingConfig>

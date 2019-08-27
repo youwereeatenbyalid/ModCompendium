@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.ComponentModel;
 
 namespace ModCompendiumLibrary.VirtualFileSystem
@@ -21,7 +22,7 @@ namespace ModCompendiumLibrary.VirtualFileSystem
                 {
                     if ( parent.Name.Length != 0 )
                     {
-                        fullName = parent.Name + "\\" + fullName;
+                        fullName = Path.Combine(parent.Name ,fullName);
                     }
 
                     parent = parent.Parent;
