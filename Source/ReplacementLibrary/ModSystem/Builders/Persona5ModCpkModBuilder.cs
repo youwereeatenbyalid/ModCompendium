@@ -77,7 +77,8 @@ namespace ModCompendiumLibrary.ModSystem.Builders
             Log.Builder.Info( "Building mod.cpk" );
             var cpkModCompiler = new CpkModBuilder();
             var cpkFilePath = hostOutputPath != null ? Path.Combine( hostOutputPath, "mod.cpk" ) : null;
-            var cpkFileBuildPath = hostOutputPath != null ? FileHelper.IsFileInUse( cpkFilePath ) ? Path.Combine( Path.GetTempPath(), "mod.cpk" ) : cpkFilePath : null;
+            Console.WriteLine(FileHelper.IsFileInUse(cpkFilePath));
+            var cpkFileBuildPath = hostOutputPath != null ? !FileHelper.IsFileInUse( cpkFilePath ) ? Path.Combine( Path.GetTempPath(), "mod.cpk" ) : cpkFilePath : null;
             var cpkFile = cpkModCompiler.Build( modFilesDirectory, cpkFileBuildPath, gameName, useCompression );
 
             if ( cpkFileBuildPath != cpkFilePath )

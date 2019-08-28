@@ -9,12 +9,12 @@ namespace ModCompendiumLibrary.ModSystem
 
         public ModDatabaseConfig()
         {
-            ModsDirectoryPath = "Mods\\";
+            ModsDirectoryPath = "Mods";
         }
 
         void IConfigurable.Deserialize( XElement element )
         {
-            ModsDirectoryPath = element.GetElementValueOrFallback( nameof( ModsDirectoryPath ), "Mods\\" );
+            ModsDirectoryPath = element.GetElementValueOrFallback( nameof( ModsDirectoryPath ), "Mods" );
         }
 
         void IConfigurable.Serialize( XElement element )

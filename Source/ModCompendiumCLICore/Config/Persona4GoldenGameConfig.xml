@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Persona4GoldenGameConfig>
+  <OutputDirectoryPath>Output/Persona4Golden</OutputDirectoryPath>
+  <ModConfigs />
+  <CpkRootOrPath></CpkRootOrPath>
+  <Compression>True</Compression>
+  <Extract>True</Extract>
+</Persona4GoldenGameConfig>

@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.ComponentModel; 
 using ModCompendium.Configs;
 using ModCompendium.ViewModels;
 using ModCompendiumLibrary;
@@ -53,9 +54,9 @@ namespace ModCompendium
 
         public MainWindowConfig Config { get; private set; }
 
-        public ModViewModel SelectedModViewModel => ( ModViewModel ) ModGrid.SelectedItem;
+        public ModViewModel SelectedModViewModel => (ModViewModel)ModGrid.SelectedItem;
 
-        public Mod SelectedMod => ( Mod )SelectedModViewModel;
+        public Mod SelectedMod => (Mod)SelectedModViewModel;
 
         public MainWindow()
         {
@@ -76,14 +77,14 @@ namespace ModCompendium
         private void InitializeGameComboBox()
         {
             GameComboBox.ItemsSource = sGameNames;
-            GameComboBox.SelectedIndex = Math.Max( 0, ( int ) Config.SelectedGame - 1 );
+            GameComboBox.SelectedIndex = Math.Max(0, (int)Config.SelectedGame - 1);
         }
 
         private void RefreshMods()
         {
-            Mods = ModDatabase.Get( SelectedGame )
-                              .OrderBy( x => GameConfig.GetModPriority( x.Id ) )
-                              .Select( x => new ModViewModel( x ) )
+            Mods = ModDatabase.Get(SelectedGame)
+                              .OrderBy(x => GameConfig.GetModPriority(x.Id))
+                              .Select(x => new ModViewModel(x))
                               .ToList();
 
             ModGrid.ItemsSource = Mods;
@@ -97,26 +98,26 @@ namespace ModCompendium
 
         private bool UpdateGameConfigEnabledMods()
         {
-            var enabledMods = Mods.Where( x => x.Enabled )
-                                  .Select( x => x.Id )
+            var enabledMods = Mods.Where(x => x.Enabled)
+                                  .Select(x => x.Id)
                                   .ToList();
 
             GameConfig.ClearEnabledMods();
 
-            if ( enabledMods.Count == 0 )
+            if (enabledMods.Count == 0)
                 return false;
 
-            enabledMods.ForEach( GameConfig.EnableMod );
+            enabledMods.ForEach(GameConfig.EnableMod);
 
             return true;
         }
 
         private void UpdateWindowConfigModOrder()
         {
-            for ( var i = 0; i < Mods.Count; i++ )
+            for (var i = 0; i < Mods.Count; i++)
             {
                 var mod = Mods[i];
-                GameConfig.SetModPriority( mod.Id, i );
+                GameConfig.SetModPriority(mod.Id, i);
             }
         }
 
@@ -134,9 +135,16 @@ namespace ModCompendium
         }
 
         // Events
+        public class UISubsitute : ISynchronizeInvoke( Action action){
+            this.BeginInvoke(action);
+        }
         private static void InvokeOnUIThread( Action action )
         {
+            //being a brave boi
+           // ISynchronizeInvoke newInvoker = new IAsyncResult();
+          //  newInvoker.BeginInvoke(action);
             Application.Current.Dispatcher.BeginInvoke( action );
+
         }
 
         private void Log_MessageBroadcasted( object sender, MessageBroadcastedEventArgs e )

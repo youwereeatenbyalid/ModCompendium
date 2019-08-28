@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Persona3PortableGameConfig>
+  <OutputDirectoryPath>Output/Persona3Portable</OutputDirectoryPath>
+  <ModConfigs />
+  <CpkRootOrPath></CpkRootOrPath>
+  <Compression>True</Compression>
+  <Extract>True</Extract>
+</Persona3PortableGameConfig>

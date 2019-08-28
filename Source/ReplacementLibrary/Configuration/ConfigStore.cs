@@ -88,7 +88,8 @@ namespace ModCompendiumLibrary.Configuration
         private static void LoadConfig( Type type, IConfigurable configurable )
         {
             // Deserialize config
-            var configPath = $"Config\\{type.Name}.xml";
+            //new path setup
+            var configPath = Path.Combine("Config", $"{type.Name}.xml");
             if ( File.Exists( configPath ) )
             {
                 Log.Config.Trace( $"Loading config file: {configPath}" );
@@ -128,7 +129,8 @@ namespace ModCompendiumLibrary.Configuration
 
         private static void SaveConfig( Type type, IConfigurable configurable )
         {
-            var configPath = $"Config\\{type.Name}.xml";
+            //var configPath = $"Config\\{type.Name}.xml";
+            var configPath = Path.Combine("Config", $"{type.Name}.xml");
             Log.Config.Trace( $"Saving config file: {configPath}" );
 
             try

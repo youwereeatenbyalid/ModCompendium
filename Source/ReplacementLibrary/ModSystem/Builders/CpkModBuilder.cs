@@ -27,12 +27,12 @@ namespace ModCompendiumLibrary.ModSystem.Builders
             {
                 throw new ArgumentNullException(nameof(root));
             }
-
+            String debugcheck = Path.GetDirectoryName(hostOutputPath);
             Log.Builder.Info($"Building CPK: {root.Name}");
 
             // SerializeCore files to temporary directory
             // This is so the builder can put them in the cpk
-            var tempDirectoryPath = Path.Combine(Path.GetTempPath(), "CpkModCompilerTemp_" + Path.GetRandomFileName());
+            var tempDirectoryPath = Path.Combine(Path.GetTempPath(), "CpkModCompilerTemp_" + Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
 
             // Copy mod directory to temp directory     
             Log.Builder.Trace($"Copying mod files to temp directory: {tempDirectoryPath}");
@@ -62,8 +62,12 @@ namespace ModCompendiumLibrary.ModSystem.Builders
             // Build cpk
             string arguments;
             if (csvPath == string.Empty)
+           
             {
-                arguments = $"\"{Path.GetFullPath(modDirectoryPath)}\" \"{Path.GetFullPath(cpkPath)}\" -align={Alignment} -code={CodePage} -mode={Mode}";
+                arguments = $"{ Path.GetDirectoryName(hostOutputPath)} /home/lbnegroponte/.local/share/wineprefixes/dotnet46  {Path.GetFullPath(modDirectoryPath)} {cpkName}";
+                //arguments = $"\"{Path.GetFullPath(modDirectoryPath)}\" \"{Path.GetFullPath(cpkPath)}\" -align={Alignment} -code={CodePage} -mode={Mode}";
+                //{ Path.GetFullPath(modDirectoryPath)}
+
             }
             else
             {
@@ -71,13 +75,15 @@ namespace ModCompendiumLibrary.ModSystem.Builders
                 Log.Builder.Info($"Compressing CPK (this can take a long time, please wait...)");
             }
 
-            var processStartInfo = new ProcessStartInfo("Dependencies\\CpkMaker\\cpkmakec.exe",
-                                                         arguments);
+            var processStartInfo = new ProcessStartInfo("Dependencies/YAHCPKtool/YACpkTool.sh", arguments);
 
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.CreateNoWindow = true;
-
-            var process = Process.Start(processStartInfo);
+            processStartInfo.CreateNoWindow = false;
+            Process process = Process.Start(processStartInfo);
+        //    while (!process.StandardOutput.EndOfStream)
+        //    {
+        //        Log.Builder.Info(process.StandardOutput.ReadLine());
+                // do something with line
+         //   }
             process.WaitForExit();
 
             if (DeleteCsv && File.Exists(CSV_PATH))
