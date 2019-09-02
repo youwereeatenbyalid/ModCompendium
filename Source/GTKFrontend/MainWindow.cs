@@ -332,6 +332,8 @@ public partial class MainWindow : Gtk.Window
         Environment.Exit(0);
     }
 
+
+
     protected void BuildButtonClick(object sender, EventArgs e)
         {
         MessageDialog delegateddialog;
@@ -463,4 +465,9 @@ public partial class MainWindow : Gtk.Window
                 }
             
         });}
+
+    protected void OnTextViewSizeAllocated(object o, SizeAllocatedArgs args)
+    {
+        LogView.ScrollToIter(LogView.Buffer.EndIter, 0, false, 0, 0);
+    }
 }

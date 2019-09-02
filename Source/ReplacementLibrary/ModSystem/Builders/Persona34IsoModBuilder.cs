@@ -14,31 +14,34 @@ namespace ModCompendiumLibrary.ModSystem.Builders
 
         protected abstract Persona34GameConfig GetConfig();
 
-        public VirtualFileSystemEntry Build( VirtualDirectory root, string hostOutputPath = null, string gameName = null, bool useCompression = false, bool useExtracted = false)
+        public VirtualFileSystemEntry Build(VirtualDirectory root, string hostOutputPath = null, string gameName = null, bool useCompression = false, bool useExtracted = false)
         {
-            if ( hostOutputPath == null )
+            if (hostOutputPath == null)
             {
                 // We need a path, so generate one.
-                hostOutputPath = Path.Combine( Path.GetTempPath(), "Persona34IsoModBuilderTemp_" + Path.GetRandomFileName() + ".iso" );
+                hostOutputPath = Path.Combine(Path.GetTempPath(), "Persona34IsoModBuilderTemp_" + Path.GetRandomFileName() + ".iso");
             }
-            else if ( Directory.Exists( hostOutputPath ) )
+            else if (Directory.Exists(hostOutputPath))
             {
                 // Add file name if the path is a directory
-                hostOutputPath = Path.Combine( hostOutputPath, "Amicitia.iso" );
+                hostOutputPath = Path.Combine(hostOutputPath, "Amicitia.iso");
             }
 
             // Build mod files
             var fileModBuilder = CreateFileModBuilder();
-            var tempDirectory = Path.Combine( Path.GetTempPath(), "Persona34IsoModBuilderTemp_" + Path.GetRandomFileName() );
-            Directory.CreateDirectory( tempDirectory );
-            var modFilesDirectory = ( VirtualDirectory )fileModBuilder.Build( root, tempDirectory );
+            var tempDirectory = Path.Combine(Path.GetTempPath(), "Persona34IsoModBuilderTemp_" + Path.GetRandomFileName());
+            Directory.CreateDirectory(tempDirectory);
+            var modFilesDirectory = (VirtualDirectory)fileModBuilder.Build(root, tempDirectory);
 
             var config = GetConfig();
-            if ( !config.DvdRootOrIsoPath.EndsWith( ".iso" ) )
-                throw new NotImplementedException( "This can only be done with an ISO source right now!" );
+            if (!config.DvdRootOrIsoPath.EndsWith(".iso"))
+                throw new NotImplementedException("This can only be done with an ISO source right now!");
 
             // Modify & save new ISO
-            Log.Builder.Info( $"Modifying & saving ISO to {hostOutputPath} (this will take a while)" );
+            Log.Builder.Info($"Modifying & saving ISO to {hostOutputPath} (this will take a while)");
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+                Log.Builder.Info("Process will take longer as WINE must translate paths, please be patient.");
+        
             UltraISOUtility.ModifyIso( config.DvdRootOrIsoPath, hostOutputPath, modFilesDirectory.Select( x => x.HostPath ) );
 
             // Delete temp directory

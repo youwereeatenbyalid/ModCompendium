@@ -106,7 +106,6 @@
     <Compile Include="gtk-gui\GTKFrontend.GCDialog.cs" />
     <Compile Include="GCWindow.cs" />
     <Compile Include="gtk-gui\GTKFrontend.GCWindow.cs" />
-    <Compile Include="gtk-gui\GTKFrontend.GTKFrontendGCDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReplacementLibrary\ReplacementLibrary.csproj">
