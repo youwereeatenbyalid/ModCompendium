@@ -158,6 +158,10 @@ public partial class MainWindow
 		this.LogView = new global::Gtk.TextView();
 		this.LogView.CanFocus = true;
 		this.LogView.Name = "LogView";
+		this.LogView.Editable = false;
+		this.LogView.CursorVisible = false;
+		this.LogView.Overwrite = true;
+		this.LogView.AcceptsTab = false;
 		this.GtkScrolledWindow1.Add(this.LogView);
 		this.vbox3.Add(this.GtkScrolledWindow1);
 		global::Gtk.Box.BoxChild w13 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.GtkScrolledWindow1]));
@@ -172,6 +176,7 @@ public partial class MainWindow
 		this.Show();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.WindowClose);
 		this.GameSelect.Changed += new global::System.EventHandler(this.OnGameChange);
+		this.GameConfigSettings.Clicked += new global::System.EventHandler(this.OnSettings);
 		this.Builder.Clicked += new global::System.EventHandler(this.BuildButtonClick);
 		this.Refresh.Clicked += new global::System.EventHandler(this.OnRefresh);
 	}

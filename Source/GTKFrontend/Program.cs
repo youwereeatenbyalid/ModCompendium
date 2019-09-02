@@ -11,6 +11,7 @@ namespace GTKFrontend
             MainWindow win = new MainWindow();
             win.Show();
             Application.Run();
+            Environment.Exit(0);
         }
     }
 }
