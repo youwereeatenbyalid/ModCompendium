@@ -127,14 +127,22 @@ public partial class MainWindow : Gtk.Window
     /// </summary>
     private void InitializeModGrid() {
         NodeStore modStore = new NodeStore(typeof(ModViewModel));
+        modStore = 
         ModGrid.NodeStore = modStore;
         //this line currently works around a bug in mono 5. Should be able to remove it once mono 6 is publicly used.
         typeof(NodeView).GetField("store", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ModGrid, modStore);
 
         CellRendererToggle modcheckbox = new CellRendererToggle();
         modcheckbox.Activatable = true;
-       // modcheckbox.Toggled +=Checkbox_Toggle();
-        ModGrid.AppendColumn("Enabled", modcheckbox,0);
+        modcheckbox.Toggled += delegate (object o, Gtk.ToggledArgs args) {
+            var node = modStore.GetNode(new Gtk.TreePath(args.Path)) as ModViewModel;
+            node.Enabled = !node.Enabled;
+        };
+        //modcheckbox.
+        TreeViewColumn modEnabled = new TreeViewColumn("Enabled", modcheckbox, "active", 0);
+        //modEnabled.AddAttribute(modcheckbox, "active", 0);
+        ModGrid.AppendColumn(modEnabled);
+        //modEnabled.SetCellDataFunc(modcheckbox, "activatable", true,);
         ModGrid.AppendColumn("title", new Gtk.CellRendererText(), "text", 1);
         ModGrid.AppendColumn("description", new Gtk.CellRendererText(), "text", 2);
         ModGrid.AppendColumn("version", new Gtk.CellRendererText(), "text", 3);
@@ -142,8 +150,8 @@ public partial class MainWindow : Gtk.Window
         ModGrid.AppendColumn("date", new Gtk.CellRendererText(), "text", 5);
         ModGrid.AppendColumn("url", new Gtk.CellRendererText(), "text", 6);
         ModGrid.AppendColumn("updateurl", new Gtk.CellRendererText(), "text", 7);
+       // ModGrid.AppendColumn("test", new Gtk.CellRendererToggle();
         ModGrid.ShowAll();
-        ModGrid.GetColumn(0).Clickable = true;
     }
 
     /// <summary>
@@ -284,7 +292,10 @@ public partial class MainWindow : Gtk.Window
     }
 
     protected void OnSettings(object sender, EventArgs e)
+
     {
+        Gtk.Dialog testdialog = new GTKFrontend.GCDialog(GameConfig);
+        testdialog.Show();
     }
 
     protected void OnRefresh(object sender, EventArgs e)
@@ -318,13 +329,18 @@ public partial class MainWindow : Gtk.Window
     protected void WindowClose(object o, DeleteEventArgs args)
     {
         UpdateConfigChangesAndSave();
+        Environment.Exit(0);
     }
 
     protected void BuildButtonClick(object sender, EventArgs e)
         {
+        MessageDialog delegateddialog;
         if (string.IsNullOrWhiteSpace(GameConfig.OutputDirectoryPath))
         {
             Console.WriteLine("Please specify an output directory in the settings.");
+            //   useddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, "Please specify an output directory in the settings.");
+            //   useddialog.Run();
+            //   useddialog.Destroy();
             //MessageBox.Show(this, "Please specify an output directory in the settings.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
@@ -333,6 +349,9 @@ public partial class MainWindow : Gtk.Window
         {
 
             Console.WriteLine("No mods are available.");
+            delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, "No mods are available.");
+            delegateddialog.Run();
+            delegateddialog.Destroy();
             //MessageBox.Show(this, "No mods are available.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
@@ -340,9 +359,13 @@ public partial class MainWindow : Gtk.Window
         if (!UpdateGameConfigEnabledMods())
         {
             Console.WriteLine("No mods are enabled.");
+            delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, "No mods are enabled.");
+            delegateddialog.Run();
+            delegateddialog.Destroy();
             // MessageBox.Show(this, "No mods are enabled.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
+
 
         var task = Task.Factory.StartNew(() =>
         {
@@ -383,26 +406,35 @@ public partial class MainWindow : Gtk.Window
 #if !DEBUG
                 catch ( InvalidConfigException exception )
                 {
-                   // InvokeOnUIThread(
-                     //   () => MessageBox.Show( this, $"SelectedGame configuration is invalid.\n{exception.Message}", "Error",
-        //                                       MessageBoxButton.OK, MessageBoxImage.Error ) );
-
+                Gtk.Application.Invoke(delegate
+                {
+                    delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, $"SelectedGame configuration is invalid.\n{exception.Message}");
+                    delegateddialog.Run();
+                    delegateddialog.Destroy();
+                });
                     return false;
                 }
                 catch ( MissingFileException exception )
                 {
-          //          InvokeOnUIThread(
-            //            () => MessageBox.Show( this, $"A file is missing:\n{exception.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error ) );
+                Gtk.Application.Invoke(delegate
+                {
+                    delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, $"A file is missing:\n{exception.Message}");
+                    delegateddialog.Run();
+                    delegateddialog.Destroy();
+                });
 
+                 
                     return false;
                 }
                 catch ( Exception exception )
                 {
-            //        InvokeOnUIThread(
-            //            () => 
-              //          MessageBox.Show(
-                //            this, $"Unhandled exception occured while building:\n{exception.Message}\n{exception.StackTrace}", "Error",
-                  //          MessageBoxButton.OK, MessageBoxImage.Error ) );
+                Gtk.Application.Invoke(delegate
+                {
+                    delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, $"Unhandled exception occured while building:\n{exception.Message}\n{exception.StackTrace}");
+                    delegateddialog.Run();
+                    delegateddialog.Destroy();
+                });
+
 
 #if DEBUG
                     throw;
@@ -419,12 +451,15 @@ public partial class MainWindow : Gtk.Window
 
         task.ContinueWith((t) =>
         {
-
-                if (t.Result)
+            if (t.Result)
                 {
-                Console.WriteLine("Done building!");
-            //        MessageBox.Show(this, "Done building!", "Done", MessageBoxButton.OK, MessageBoxImage.None);
-                    RunPostBuildScript("postbuild.bat");
+                Gtk.Application.Invoke(delegate {
+                    delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, "Done building!");
+                    delegateddialog.Run();
+                    delegateddialog.Destroy();
+                });
+
+                RunPostBuildScript("postbuild.bat");
                 }
             
         });}

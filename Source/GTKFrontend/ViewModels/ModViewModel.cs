@@ -1,18 +1,44 @@
 ﻿using System;
 using Gtk;
+using GLib; 
 using System.Linq;
 using ModCompendiumLibrary.Configuration;
 using ModCompendiumLibrary.ModSystem;
 
 namespace GTKFrontend.ViewModels
 {
-    [Gtk.TreeNode(ListOnly = true)]
+
+    [Gtk.TreeNode(ListOnly = false)]
     public class ModViewModel :Gtk.TreeNode
     {
         private readonly Mod mMod;
         private readonly GameConfig mConfig;
-        [Gtk.TreeNodeValue (Column=0)]
-        public bool Enabled
+
+        public string Enabledtext {
+            get { 
+                if (mConfig.IsModEnabled(Id))
+                {
+                    return "Enabled";
+                }
+                else{
+                    return "not enabled";
+                }
+            } 
+            set
+            {
+                if (mConfig.IsModEnabled(Id))
+                {
+                    mConfig.EnableMod(Id);
+                }
+                else
+                {
+                    mConfig.DisableMod(Id);
+                }
+            }
+
+        }
+        [Gtk.TreeNodeValue(Column = 0)]
+        public  Boolean Enabled
         {
             get => mConfig.IsModEnabled( Id );
             set

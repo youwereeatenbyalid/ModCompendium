@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime;
 using System.Diagnostics;
 using System.IO;
 using ModCompendiumLibrary.Logging;
@@ -20,6 +21,14 @@ namespace ModCompendiumLibrary.ModSystem.Builders
 
         public bool DeleteCsv { get; } = true;
 
+        public static bool IsLinux
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
         /// <inheritdoc />
         public VirtualFileSystemEntry Build(VirtualDirectory root, string hostOutputPath = null, string gameName = null, bool useCompression = false, bool useExtracted = false)
         {
@@ -61,30 +70,44 @@ namespace ModCompendiumLibrary.ModSystem.Builders
 
             // Build cpk
             string arguments;
-            if (csvPath == string.Empty)
-           
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
             {
-                arguments = $"{ Path.GetDirectoryName(hostOutputPath)} /home/lbnegroponte/.local/share/wineprefixes/dotnet46  {Path.GetFullPath(modDirectoryPath)} {cpkName}";
-                //arguments = $"\"{Path.GetFullPath(modDirectoryPath)}\" \"{Path.GetFullPath(cpkPath)}\" -align={Alignment} -code={CodePage} -mode={Mode}";
-                //{ Path.GetFullPath(modDirectoryPath)}
+                if (csvPath == string.Empty)
 
+                {
+                    arguments = $"YAHCPKtool/YACpkTool.exe { Path.GetDirectoryName(hostOutputPath)}  {Path.GetFullPath(modDirectoryPath)} {cpkName}";
+                }
+                else
+                {
+                    arguments = $"{Path.GetFullPath(csvPath)} {Path.GetFullPath(cpkPath)} -dir={modDirectoryPath} -align={Alignment} -mode={Mode}";
+                    Log.Builder.Info($"Compressing CPK (this can take a long time, please wait...)");
+                }
+
+                ProcessStartInfo bashinfo = new ProcessStartInfo("Dependencies/LinuxRunner.sh", arguments);
+                Process bashstart = Process.Start(bashinfo);
+                bashstart.WaitForExit();
             }
             else
             {
-                arguments = $"\"{Path.GetFullPath(csvPath)}\" \"{Path.GetFullPath(cpkPath)}\" -dir=\"{modDirectoryPath}\" -align={Alignment} -mode={Mode}";
-                Log.Builder.Info($"Compressing CPK (this can take a long time, please wait...)");
+                if (csvPath == string.Empty)
+                {
+                    arguments = $"\"{Path.GetFullPath(modDirectoryPath)}\" \"{Path.GetFullPath(cpkPath)}\" -align={Alignment} -code={CodePage} -mode={Mode}";
+                }
+                else
+                {
+                    arguments = $"\"{Path.GetFullPath(csvPath)}\" \"{Path.GetFullPath(cpkPath)}\" -dir=\"{modDirectoryPath}\" -align={Alignment} -mode={Mode}";
+                    Log.Builder.Info($"Compressing CPK (this can take a long time, please wait...)");
+                }
+
+                var processStartInfo = new ProcessStartInfo("Dependencies\\CpkMaker\\cpkmakec.exe",
+                                                             arguments);
+
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.CreateNoWindow = true;
+
+                var process = Process.Start(processStartInfo);
+                process.WaitForExit();
             }
-
-            var processStartInfo = new ProcessStartInfo("Dependencies/YAHCPKtool/YACpkTool.sh", arguments);
-
-            processStartInfo.CreateNoWindow = false;
-            Process process = Process.Start(processStartInfo);
-        //    while (!process.StandardOutput.EndOfStream)
-        //    {
-        //        Log.Builder.Info(process.StandardOutput.ReadLine());
-                // do something with line
-         //   }
-            process.WaitForExit();
 
             if (DeleteCsv && File.Exists(CSV_PATH))
             {

@@ -123,18 +123,33 @@ namespace ModCompendiumLibrary.ModSystem.Builders
 
             Log.Builder.Info( $"Patching executable" );
             Log.Builder.Trace( $"Executable file path: {executableFilePath}" );
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+            {
+                if (bgmCvmModified)
+                    PatchExecutable(executableFilePath, bgmCvmFile.HostPath);
 
-            if ( bgmCvmModified )
-                PatchExecutable( executableFilePath, bgmCvmFile.HostPath );
+                if (btlCvmModified)
+                    PatchExecutable(executableFilePath, btlCvmFile.HostPath);
 
-            if ( btlCvmModified )
-                PatchExecutable( executableFilePath, btlCvmFile.HostPath );
+                if (dataCvmModified)
+                    PatchExecutable(executableFilePath, dataCvmFile.HostPath);
 
-            if ( dataCvmModified )
-                PatchExecutable( executableFilePath, dataCvmFile.HostPath );
+                if (envCvmModified)
+                    PatchExecutable(executableFilePath, envCvmFile.HostPath);
+            }
+            else {
+                if (bgmCvmModified)
+                    PatchExecutableLinux(executableFilePath, bgmCvmFile.HostPath);
 
-            if ( envCvmModified )
-                PatchExecutable( executableFilePath, envCvmFile.HostPath );
+                if (btlCvmModified)
+                    PatchExecutableLinux(executableFilePath, btlCvmFile.HostPath);
+
+                if (dataCvmModified)
+                    PatchExecutableLinux(executableFilePath, dataCvmFile.HostPath);
+
+                if (envCvmModified)
+                    PatchExecutableLinux(executableFilePath, envCvmFile.HostPath);
+            }
 
             executableFile = VirtualFile.FromHostFile( executableFilePath );
             executableFile.MoveTo( newDvdRootDirectory, true );
@@ -201,7 +216,6 @@ namespace ModCompendiumLibrary.ModSystem.Builders
         private void PatchExecutable( string executableFilePath, string cvmFilePath )
         {
             Log.Builder.Trace( $"Patching executable for CVM: {cvmFilePath}" );
-
             var processStartInfo = new ProcessStartInfo( "Dependencies\\PersonaPatcher\\PersonaPatcher.exe",
                                                          $"\"{executableFilePath}\" \"{cvmFilePath}\"" );
 
@@ -212,6 +226,32 @@ namespace ModCompendiumLibrary.ModSystem.Builders
             {
                 var process = Process.Start( processStartInfo );
                 if ( process != null && !process.WaitForExit( 2000 ) && !process.HasExited )
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                }
+            }
+            catch (Exception)
+            {
+                // There's a possible condition where between HasExited returning false and Kill() the process might've exited already
+            }
+        }
+        private void PatchExecutableLinux(string executableFilePath, string cvmFilePath)
+        {
+            Log.Builder.Trace($"Patching executable for CVM on linux: {cvmFilePath}");
+
+            string proccesspath = $"PersonaPatcher{Path.DirectorySeparatorChar}PersonaPatcher.exe";
+            string args = $" . {executableFilePath} {cvmFilePath}";
+            var processStartInfo = new ProcessStartInfo("Dependencies/LinuxRunner.sh",
+                                                         $"{ proccesspath} {args}");
+
+            processStartInfo.UseShellExecute = false;
+            processStartInfo.CreateNoWindow = true;
+
+            try
+            {
+                var process = Process.Start(processStartInfo);
+                if (process != null && !process.WaitForExit(2000) && !process.HasExited)
                 {
                     process.Kill();
                     process.WaitForExit();

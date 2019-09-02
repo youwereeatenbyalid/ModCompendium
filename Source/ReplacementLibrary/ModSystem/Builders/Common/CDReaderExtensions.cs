@@ -13,6 +13,7 @@ namespace ModCompendiumLibrary.ModSystem.Builders
     {
         public static VirtualDirectory ToVirtualDirectory( this CDReader isoFileSystem )
         {
+            string teststring = isoFileSystem.Root.FullName;
             return ToVirtualFileSystemEntry( isoFileSystem, isoFileSystem.Root.FullName ) as VirtualDirectory;
         }
 
@@ -34,6 +35,7 @@ namespace ModCompendiumLibrary.ModSystem.Builders
 
                 foreach ( var file in isoFileSystem.GetFiles( path ) )
                 {
+
                     var entry = ToVirtualFileSystemEntry( isoFileSystem, file );
                     entry.MoveTo( directory );
                 }

@@ -7,50 +7,81 @@ namespace ModCompendiumLibrary.ModSystem.Builders.Utilities
 {
     public static class UltraISOUtility
     {
-        private const string EXE_BASE_PATH = "Dependencies\\UltraISO\\UltraISO";
+        private const string EXE_BASE_PATH_PARENT = "Dependencies";
+        private const string EXE_BASE_PATH_CHILD = "UltraISO";
+
+
         private static readonly string sExePath;
 
         public static bool Available => sExePath != null;
 
         static UltraISOUtility()
         {
-            if ( File.Exists( EXE_BASE_PATH + ".lnk" ) )
+
+            string[] catcherfiles;
+            catcherfiles = System.IO.Directory.GetFiles($"{EXE_BASE_PATH_PARENT}{Path.DirectorySeparatorChar}{EXE_BASE_PATH_CHILD}", "*.lnk");
+            if (catcherfiles.Length > 0) 
             {
-                sExePath = ShortcutResolver.ResolveShortcut( EXE_BASE_PATH + ".lnk" );
-                if ( !File.Exists( sExePath ) )
-                    sExePath = null;
+                if (File.Exists(catcherfiles[0]))
+                {
+                    sExePath = ShortcutResolver.ResolveShortcut(catcherfiles[0]);
+                    if (!File.Exists(sExePath))
+                        sExePath = null;
+                }
+            }
+            catcherfiles = System.IO.Directory.GetFiles($"{EXE_BASE_PATH_PARENT}{Path.DirectorySeparatorChar}{EXE_BASE_PATH_CHILD}", "*.exe");
+            if (catcherfiles.Length > 0)
+            {
+                if (sExePath == null && File.Exists(catcherfiles[0]))
+                {
+                    sExePath = catcherfiles[0];
+                }
             }
 
-            if ( sExePath == null && File.Exists( EXE_BASE_PATH + ".exe" ) )
-            {
-                sExePath = EXE_BASE_PATH + ".exe";
-            }
         }
 
-        public static void ModifyIso( string inIsoPath, string outIsoPath, IEnumerable<string> files )
+        public static void ModifyIso(string inIsoPath, string outIsoPath, IEnumerable<string> files)
         {
             // Build arguments
             var arguments = new StringBuilder();
-            arguments.Append( $"-input \"{inIsoPath}\" " );
 
-            foreach ( var file in files )
-                arguments.Append( $"-file \"{file}\" " );
 
-            arguments.Append( $"-output {outIsoPath}" );
+
 
             // Must delete the file if it exists, otherwise the program will fail
-            if ( File.Exists( outIsoPath ) )
-                File.Delete( outIsoPath );
+            if (File.Exists(outIsoPath))
+                File.Delete(outIsoPath);
 
             // Set up parameters
-            var processStartInfo = new ProcessStartInfo( sExePath, arguments.ToString() )
+            ProcessStartInfo processStartInfo;
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) 
             {
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+                arguments.Append($"-input \"{inIsoPath}\" ");
 
-            // Run program
-            var process = Process.Start( processStartInfo );
+                foreach (var file in files)
+                    arguments.Append($"-file \"{file}\" ");
+                arguments.Append($"-output {outIsoPath}");
+                processStartInfo = new ProcessStartInfo(sExePath, arguments.ToString())
+                    {
+                        UseShellExecute = false,
+                     //   CreateNoWindow = true
+                    };
+
+                // Run program
+
+            }
+            else
+            {
+                arguments.Append($"'{sExePath}' ");
+                arguments.Append($"'{inIsoPath}' ");
+                arguments.Append($"'{outIsoPath}' ");
+                foreach (var file in files)
+                    arguments.Append($"'{file}' ");
+
+                processStartInfo = new ProcessStartInfo("Dependencies/UltraISO.sh", arguments.ToString());
+            }
+            var process = Process.Start(processStartInfo);
+
             process?.WaitForExit();
         }
     }
