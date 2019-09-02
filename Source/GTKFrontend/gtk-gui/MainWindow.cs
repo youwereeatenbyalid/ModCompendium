@@ -179,5 +179,6 @@ public partial class MainWindow
 		this.GameConfigSettings.Clicked += new global::System.EventHandler(this.OnSettings);
 		this.Builder.Clicked += new global::System.EventHandler(this.BuildButtonClick);
 		this.Refresh.Clicked += new global::System.EventHandler(this.OnRefresh);
+		this.LogView.SizeAllocated += new global::Gtk.SizeAllocatedHandler(this.OnTextViewSizeAllocated);
 	}
 }
