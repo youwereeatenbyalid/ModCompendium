@@ -144,8 +144,6 @@ public partial class MainWindow
 		this.ModGrid = new global::Gtk.NodeView();
 		this.ModGrid.CanFocus = true;
 		this.ModGrid.Name = "ModGrid";
-		this.ModGrid.EnableSearch = false;
-		this.ModGrid.Reorderable = true;
 		this.GtkScrolledWindow.Add(this.ModGrid);
 		this.vbox3.Add(this.GtkScrolledWindow);
 		global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.GtkScrolledWindow]));
@@ -179,6 +177,9 @@ public partial class MainWindow
 		this.GameConfigSettings.Clicked += new global::System.EventHandler(this.OnSettings);
 		this.Builder.Clicked += new global::System.EventHandler(this.BuildButtonClick);
 		this.Refresh.Clicked += new global::System.EventHandler(this.OnRefresh);
-		this.LogView.SizeAllocated += new global::Gtk.SizeAllocatedHandler(this.OnTextViewSizeAllocated);
+		this.New.Clicked += new global::System.EventHandler(this.newmodclick);
+		this.Deleted.Clicked += new global::System.EventHandler(this.OnDeleteMod);
+		this.ModGrid.ButtonPressEvent += new global::Gtk.ButtonPressEventHandler(this.onModGridContext);
+		this.ModGrid.SelectCursorRow += new global::Gtk.SelectCursorRowHandler(this.onModSelection);
 	}
 }

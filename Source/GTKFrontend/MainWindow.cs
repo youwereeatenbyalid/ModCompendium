@@ -126,8 +126,8 @@ public partial class MainWindow : Gtk.Window
     /// Then adds the appropriate columns to the ModGrid.
     /// </summary>
     private void InitializeModGrid() {
+        ModGrid.NodeSelection.Changed += onModSelection;
         NodeStore modStore = new NodeStore(typeof(ModViewModel));
-        modStore = 
         ModGrid.NodeStore = modStore;
         //this line currently works around a bug in mono 5. Should be able to remove it once mono 6 is publicly used.
         typeof(NodeView).GetField("store", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ModGrid, modStore);
@@ -264,6 +264,7 @@ public partial class MainWindow : Gtk.Window
     {
 
         Build();
+        this.Deleted.Sensitive = false;
         InitializeLog();
         //gets the Assembly version
         var version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -282,7 +283,6 @@ public partial class MainWindow : Gtk.Window
         RefreshModDatabase();
         //starts the combobox (shouldn't it be already be initialized?)
         InitializeGameComboBox();
-        Console.WriteLine(ModGrid.GetColumn(0));
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)
@@ -323,7 +323,7 @@ public partial class MainWindow : Gtk.Window
 
     protected void OnDeleteMod(object sender, EventArgs e)
     {
-
+        DeleteSelectedMod();
     }
 
     protected void WindowClose(object o, DeleteEventArgs args)
@@ -340,9 +340,9 @@ public partial class MainWindow : Gtk.Window
         if (string.IsNullOrWhiteSpace(GameConfig.OutputDirectoryPath))
         {
             Console.WriteLine("Please specify an output directory in the settings.");
-            //   useddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, "Please specify an output directory in the settings.");
-            //   useddialog.Run();
-            //   useddialog.Destroy();
+            delegateddialog = new MessageDialog(this, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Close, "Please specify an output directory in the settings.");
+            delegateddialog.Run();
+            delegateddialog.Destroy();
             //MessageBox.Show(this, "Please specify an output directory in the settings.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
@@ -466,8 +466,95 @@ public partial class MainWindow : Gtk.Window
             
         });}
 
-    protected void OnTextViewSizeAllocated(object o, SizeAllocatedArgs args)
+
+
+
+
+    [GLib.ConnectBeforeAttribute]
+    protected void onModGridContext(object o, ButtonPressEventArgs args)
     {
-        LogView.ScrollToIter(LogView.Buffer.EndIter, 0, false, 0, 0);
+        if (args.Event.Button == 3 && ModGrid.NodeSelection.SelectedNode != null)
+        {
+            Menu m = new Menu();
+            MenuItem opendirectory = new MenuItem("Open Directory");
+            MenuItem deletemod = new MenuItem("Delete");
+            deletemod.ButtonPressEvent += OnDeleteModButtonPressed;
+            opendirectory.ButtonPressEvent += OnOpenDirectoryClick;
+            m.Add(opendirectory);
+            m.Add(deletemod);
+            m.ShowAll();
+            m.Popup();
+        }
+
+    }
+    protected void OnDeleteModButtonPressed(object o, ButtonPressEventArgs args) 
+    {
+        DeleteSelectedMod();
+    }
+
+    private void DeleteSelectedMod()
+    {
+        Gtk.MessageDialog deletewarning = new Gtk.MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.OkCancel, "Are you sure you want to delete this mod? The data will be lost forever.");
+        if (deletewarning.Run() == (int)ResponseType.Ok)
+        {
+            Log.General.Warning($"Deleting mod directory: {SelectedMod.BaseDirectory}");
+            Directory.Delete(SelectedMod.BaseDirectory, true);
+            RefreshModDatabase();
+        }
+        deletewarning.Destroy();
+    }
+
+    protected void OnOpenDirectoryClick(object sender, ButtonPressEventArgs e)
+    {
+        Process.Start(SelectedMod.BaseDirectory);
+    }
+
+    protected void newmodclick(object sender, EventArgs e)
+    {
+        GTKFrontend.NewModDialog newMod = new GTKFrontend.NewModDialog();
+        if (newMod.Run() != (int)ResponseType.Ok) 
+        {
+            newMod.Destroy(); 
+            return; 
+        }
+
+        // Get unique directory
+        string modPath = System.IO.Path.Combine(ModDatabase.ModDirectory, SelectedGame.ToString(), newMod.ModTitle);
+        if (Directory.Exists(modPath))
+        {
+            var newModPath = modPath;
+            int i = 0;
+
+            while (Directory.Exists(newModPath))
+                newModPath = modPath + "_" + i++;
+
+            modPath = newModPath;
+        }
+
+        // Build mod
+        var mod = new ModBuilder()
+            .SetGame(SelectedGame)
+            .SetTitle(newMod.ModTitle)
+            .SetDescription(newMod.Description)
+            .SetVersion(newMod.Version)
+            .SetDate(DateTime.UtcNow.ToShortDateString())
+            .SetAuthor(newMod.Author)
+            .SetUrl(newMod.Url)
+            .SetUpdateUrl(newMod.UpdateUrl)
+            .SetBaseDirectoryPath(modPath)
+            .Build();
+
+        // Do actual saving
+        var modLoader = new XmlModLoader();
+        modLoader.Save(mod);
+
+        // Reload
+        RefreshModDatabase();
+    }
+
+    protected void onModSelection(object o, EventArgs args)
+    {
+        this.Deleted.Sensitive = (ModGrid.NodeSelection.SelectedNode != null);
+
     }
 }

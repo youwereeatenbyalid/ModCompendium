@@ -34,7 +34,7 @@
         <Command>
           <type>AfterBuild</type>
           <name>Symlinkdirectory</name>
-          <command>ln -s /media/lbnegroponte/02EC810DEC80FBE3/Users/Student/Documents/UltraISO/PortableEdition/UltraISO UltraISO</command>
+          <command>ln -s /media/lbnegroponte/02EC810DEC80FBE31/Users/Student/Documents/UltraISO/PortableEdition/UltraISO UltraISO</command>
           <workingdir>${TargetDir}/Dependencies</workingdir>
         </Command>
       </CustomCommands>
@@ -59,7 +59,7 @@
         </Command>
         <Command>
           <type>AfterBuild</type>
-          <command>ln -s /media/lbnegroponte/02EC810DEC80FBE3/Users/Student/Documents/UltraISO/PortableEdition/UltraISO UltraISO</command>
+          <command>ln -s /media/lbnegroponte/02EC810DEC80FBE31/Users/Student/Documents/UltraISO/PortableEdition/UltraISO/ UltraISO</command>
           <workingdir>${TargetDir}/Dependencies</workingdir>
         </Command>
       </CustomCommands>
@@ -104,8 +104,8 @@
     <Compile Include="ViewModels\ModViewModel.cs" />
     <Compile Include="GCDialog.cs" />
     <Compile Include="gtk-gui\GTKFrontend.GCDialog.cs" />
-    <Compile Include="GCWindow.cs" />
-    <Compile Include="gtk-gui\GTKFrontend.GCWindow.cs" />
+    <Compile Include="NewModDialog.cs" />
+    <Compile Include="gtk-gui\GTKFrontend.NewModDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReplacementLibrary\ReplacementLibrary.csproj">
@@ -157,6 +157,10 @@
     </None>
     <None Include="..\..\Dependencies\Binaries\UltraISO.sh">
       <Link>Binaries\UltraISO.sh</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\Dependencies\Binaries\PersonaPatcher\AtlusLibSharp.dll">
+      <Link>Binaries\PersonaPatcher\AtlusLibSharp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
